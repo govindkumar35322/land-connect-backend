@@ -1,5 +1,6 @@
 package com.landconnect.controller;
 
+import com.landconnect.dto.request.LoginRequest;
 import com.landconnect.dto.request.RegisterRequest;
 import com.landconnect.dto.response.ApiResponse;
 import com.landconnect.service.AuthService;
@@ -19,6 +20,11 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<ApiResponse> register(@Valid @RequestBody RegisterRequest request){
         return ResponseEntity.ok(authService.register(request));
+
+    }
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse> login(@Valid @RequestBody LoginRequest request){
+        return ResponseEntity.ok(authService.login(request));
 
     }
 }

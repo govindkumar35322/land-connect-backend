@@ -3,6 +3,7 @@ package com.landconnect.service.impl;
 import com.landconnect.dto.request.LoginRequest;
 import com.landconnect.dto.request.RegisterRequest;
 import com.landconnect.dto.response.ApiResponse;
+import com.landconnect.dto.response.LoginResponse;
 import com.landconnect.entity.Role;
 import com.landconnect.entity.User;
 import com.landconnect.exception.EmailAlreadyExistsException;
@@ -11,11 +12,14 @@ import com.landconnect.exception.PhoneNumberAlreadyExistsException;
 import com.landconnect.exception.RoleNotFoundException;
 import com.landconnect.repository.RoleRepository;
 import com.landconnect.repository.UserRepository;
+import com.landconnect.security.jwt.JwtService;
 import com.landconnect.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import org.springframework.security.core.Authentication;
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,6 +32,9 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+
     @Override
     public ApiResponse register(RegisterRequest request) {
 //       if(userRepository.existsByEmail(request.getEmail())){
@@ -87,11 +94,33 @@ public class AuthServiceImpl implements AuthService {
                .timestamp(LocalDateTime.now())
                .build();
     }
-
-
-
     @Override
     public ApiResponse login(LoginRequest request) {
-        return null;
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
+
+        User user = (User) authentication.getPrincipal();
+
+        String token = jwtService.generateToken(user);
+
+        LoginResponse loginResponse = LoginResponse.builder()
+                .token(token)
+                .tokenType("Bearer")
+                .build();
+
+        return ApiResponse.builder()
+                .success(true)
+                .message("Login Successfully.")
+                .data(loginResponse)
+                .timestamp(LocalDateTime.now())
+                .build();
     }
+
+
+
 }
