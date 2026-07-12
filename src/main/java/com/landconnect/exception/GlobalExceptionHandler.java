@@ -99,4 +99,22 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+    @ExceptionHandler(LandNotFoundException.class)
+    public ResponseEntity<ApiResponse> handleLandNotFoundException( LandNotFoundException ex){
+        ApiResponse response= ApiResponse.builder()
+                .success(false)
+                .message(ex.getMessage())
+                .data(null)
+                .timestamp(LocalDateTime.now()).build();
+        return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
+    }
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse> handelAccessDeniedException(AccessDeniedException ex){
+        ApiResponse response=ApiResponse.builder()
+                .success(false)
+                .message(ex.getMessage()
+                ).data(null).timestamp(LocalDateTime.now()).build();
+        return  new ResponseEntity<>(response,HttpStatus.FORBIDDEN);
+    }
 }
+

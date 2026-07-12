@@ -39,13 +39,14 @@ public class User extends BaseEntity  implements UserDetails {
     @Column(name="phone_number",nullable = false,unique=true)
     private String phoneNumber;
     private boolean enabled;
-    @ManyToMany(fetch=FetchType.LAZY)
+    @ManyToMany(fetch=FetchType.EAGER)
     @JoinTable(
             name="user_roles",
             joinColumns=@JoinColumn(name="user_id"),
             inverseJoinColumns=@JoinColumn(name="role_id"))
     private Set<Role> roles=new HashSet<>();
-
+    @OneToMany(mappedBy="owner",cascade=CascadeType.ALL,orphanRemoval = true,fetch=FetchType.LAZY)
+   private Set<Land> lands =new HashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
