@@ -116,5 +116,13 @@ public class GlobalExceptionHandler {
                 ).data(null).timestamp(LocalDateTime.now()).build();
         return  new ResponseEntity<>(response,HttpStatus.FORBIDDEN);
     }
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse> handelResourceNotFoundException(ResourceNotFoundException ex){
+        ApiResponse response=ApiResponse.builder()
+                .success(false)
+                .message(ex.getMessage()
+                ).data(null).timestamp(LocalDateTime.now()).build();
+        return  new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
+    }
 }
 

@@ -9,10 +9,7 @@ import lombok.experimental.SuperBuilder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -79,6 +76,7 @@ public class User extends BaseEntity  implements UserDetails {
     public boolean isEnabled() {
         return enabled;
     }
-
+    @OneToMany(mappedBy = "user",cascade=CascadeType.ALL)
+    private List<Favorite> favorites =new ArrayList<>();
 
 }

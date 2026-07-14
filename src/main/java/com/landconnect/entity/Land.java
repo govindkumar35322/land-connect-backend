@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -39,4 +41,6 @@ public class Land  extends BaseEntity{
     @Column(nullable = false)
     private LandType landType;
 
+    @OneToMany(mappedBy = "land", cascade = CascadeType.ALL)
+    private List<Favorite> favorites = new ArrayList<>();
 }
