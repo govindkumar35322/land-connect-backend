@@ -1,5 +1,6 @@
 package com.landconnect.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -47,4 +48,8 @@ public class Land  extends BaseEntity{
 
     @OneToMany(mappedBy = "land",cascade=CascadeType.ALL,orphanRemoval=true)
     private List<LandImage> image=new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "land",cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<Booking> bookings=new ArrayList<>();
 }
