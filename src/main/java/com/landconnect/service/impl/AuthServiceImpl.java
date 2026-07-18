@@ -14,6 +14,8 @@ import com.landconnect.repository.RoleRepository;
 import com.landconnect.repository.UserRepository;
 import com.landconnect.security.jwt.JwtService;
 import com.landconnect.service.AuthService;
+import com.landconnect.service.EmailTemplateService;
+import com.landconnect.service.MailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,35 +36,22 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final MailService mailService;
+    private final EmailTemplateService emailTemplateService;
 
     @Override
     public ApiResponse register(RegisterRequest request) {
-//       if(userRepository.existsByEmail(request.getEmail())){
-//           return ApiResponse.builder()
-//                   .success(false)
-//                   .message("Email Already Registered")
-//                   .build();
-//       }
+
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new EmailAlreadyExistsException("Email already registered.");
         }
-//       if(userRepository.existsByPhoneNumber(request.getPhoneNumber())){
-//           return ApiResponse.builder()
-//                   .success(false)
-//                   .message("Phone Number Already Registered")
-//                   .build();
-//       }
+
+
         if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
             throw new PhoneNumberAlreadyExistsException("Phone number already registered.");
         }
 
-//       if(!request.getPassword().equals(request.getConfirmPassword()))
-//       {
-//           return ApiResponse.builder()
-//                   .success(false)
-//                   .message("Password and confirm password do not Match.")
-//                   .build();
-//       }
+
         if (!request.getPassword().equals(request.getConfirmPassword())) {
             throw new PasswordMismatchException("Password and Confirm Password do not match.");
         }
@@ -72,8 +61,6 @@ public class AuthServiceImpl implements AuthService {
                .map(roleType->roleRepository.findByName(roleType)
                        .orElseThrow(()-> new RoleNotFoundException("Role Not Found: "+ roleType)))
                                              // RunTimeException
-//
-//
                .collect(Collectors.toSet());
 
         // create User object here
@@ -86,7 +73,15 @@ public class AuthServiceImpl implements AuthService {
                .roles(roles)
                .build();
      user.setPassword(passwordEncoder.encode(request.getPassword()));
-     userRepository.save(user);
+      User savedUser= userRepository.save(user);
+        String html = emailTemplateService.getWelcomeTemplate(
+                savedUser.getFirstName()
+        );
+        mailService.sendHtmlEmail(
+                savedUser.getEmail(),
+                "Welcome to Land Connect",
+                html
+        );
        return ApiResponse.builder()
                .success(true)
                .message("Registered Successfully.")

@@ -12,6 +12,8 @@ import com.landconnect.repository.BookingRepository;
 import com.landconnect.repository.LandRepository;
 import com.landconnect.repository.UserRepository;
 import com.landconnect.service.BookingService;
+import com.landconnect.service.EmailTemplateService;
+import com.landconnect.service.MailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,6 +26,9 @@ public class BookingServiceImpl  implements BookingService {
     private final BookingRepository bookingRepository;
     private final LandRepository landRepository;
     private final UserRepository userRepository;
+
+    private final MailService mailService;
+    private final EmailTemplateService emailTemplateService;
 
     private User getCurrentUser() {
 
@@ -52,7 +57,21 @@ public class BookingServiceImpl  implements BookingService {
                  .visitDate(request.getVisitDate())
                  .message(request.getMessage())
                  .status(BookingStatus.PENDING).build();
-         bookingRepository.save(booking);
+       Booking savedBooking=  bookingRepository.save(booking);
+        User owner = land.getOwner();
+
+        String html = emailTemplateService.getBookingCreatedTemplate(
+                owner.getFirstName(),
+                currentUser.getFirstName(),
+                land.getTitle(),
+                savedBooking.getVisitDate().toString()
+        );
+
+        mailService.sendHtmlEmail(
+                owner.getEmail(),
+                "New Booking Request",
+                html
+        );
 
         return  ApiResponse.builder()
                 .success(true)
@@ -136,7 +155,12 @@ public class BookingServiceImpl  implements BookingService {
 
         booking.setStatus(BookingStatus.APPROVED);
 
-        bookingRepository.save(booking);
+ Booking updatedBooking=   bookingRepository.save(booking);
+ User buyer=booking.getUser();
+ User owner=booking.getLand().getOwner();
+ String html=emailTemplateService.getBookingApprovedTemplate(buyer.getFirstName(), owner.getFirstName(), booking.getLand().getTitle(),updatedBooking.getVisitDate().toString());
+     mailService.sendHtmlEmail(buyer.getEmail(),"Booking Approved",html);
+
         return ApiResponse.builder()
                 .success(true)
                 .message("Booking approved successfully.")
@@ -166,8 +190,17 @@ public class BookingServiceImpl  implements BookingService {
         }
         booking.setStatus(BookingStatus.REJECTED);
 
-        bookingRepository.save(booking);
+     Booking updatedBooking=   bookingRepository.save(booking);
+      User buyer=booking.getUser();
+      User owner=booking.getLand().getOwner();
+      String html =emailTemplateService.getBookingRejectedTemplate(
+              buyer.getFirstName(),
+              owner.getFirstName(),
+              booking.getLand().getTitle(),
+              updatedBooking.getVisitDate().toString()
 
+      );
+      mailService.sendHtmlEmail(buyer.getEmail(),"Booking Rejected",html);
         return ApiResponse.builder()
                 .success(true)
                 .message("Booking rejected successfully.")
